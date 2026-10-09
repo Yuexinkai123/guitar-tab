@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#234e3c">
+  <title>弦外 · 把音乐变成六线谱</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/playback.css">
+  <script defer src="/static/guitar-synth.js"></script>
+  <script defer src="/static/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="弦外首页"><span class="brand-icon">≋</span><span>弦外<span class="brand-en">STRINGNOTE</span></span></a>
+    <div class="header-note"><span class="status-dot"></span>在你的电脑上处理音乐</div>
+    <a class="quiet-link" href="#guide">第一次使用 ↗</a>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow"><span></span> 从听见，到弹出来</div>
+        <h1>把喜欢的歌，<br>弹给自己听<span class="accent">。</span></h1>
+        <p>上传一首歌，提取吉他声部，生成六线谱草稿。<br>听一听、改一改，再开始你的练习。</p>
+        <div class="hero-tags"><span>吉他多音识别</span><span>自动安排指法</span><span>试听与导出</span></div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <span class="art-label">A LITTLE MUSIC, EVERY DAY.</span>
+        <svg viewBox="0 0 430 260" fill="none"><path d="M20 82H410M20 105H410M20 128H410M20 151H410M20 174H410M20 197H410" stroke="currentColor" opacity=".2"/><path d="M66 149V51M177 103V31M287 173V75M365 126V46" stroke="currentColor" stroke-width="3"/><ellipse cx="55" cy="151" rx="13" ry="9" transform="rotate(-25 55 151)" fill="currentColor"/><ellipse cx="166" cy="105" rx="13" ry="9" transform="rotate(-25 166 105)" fill="currentColor"/><ellipse cx="276" cy="175" rx="13" ry="9" transform="rotate(-25 276 175)" fill="currentColor"/><ellipse cx="354" cy="128" rx="13" ry="9" transform="rotate(-25 354 128)" fill="currentColor"/><path d="M67 52C91 53 102 66 91 84M287 75C316 77 318 90 311 101" stroke="currentColor" stroke-width="3"/><path d="M50 218C159 251 257 215 371 224" stroke="currentColor" stroke-dasharray="3 6" opacity=".35"/></svg>
+        <span class="art-foot">一段旋律 · 六根琴弦</span>
+      </div>
+    </section>
+
+    <section class="workspace" aria-labelledby="upload-heading">
+      <div class="upload-panel">
+        <div class="section-heading"><div><span class="step-number">01</span><h2 id="upload-heading">从一首歌开始</h2></div><span class="small-muted">MP3 / WAV / FLAC / OGG</span></div>
+        <label class="dropzone" id="dropzone" for="file-input" tabindex="0">
+          <input type="file" id="file-input" accept=".mp3,.wav,.flac,.ogg,audio/mpeg,audio/wav,audio/flac,audio/ogg">
+          <div class="upload-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 16V3m-5 5 5-5 5 5M4 15v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5"/></svg></div>
+          <strong id="file-title">点击选择音乐，或拖到这里</strong>
+          <span id="file-subtitle">支持整首歌曲或片段分析 · 最大 40 MB</span>
+          <span class="file-cta" id="file-cta">选择音乐文件</span>
+        </label>
+        <div id="file-preview" class="file-preview" hidden>
+          <canvas id="waveform" height="64" aria-label="所选音频波形"></canvas>
+          <audio id="original-audio" controls preload="metadata" aria-label="试听上传的歌曲"></audio>
+        </div>
+        <div class="options">
+          <label>要转成谱的声部<select id="mode"><option value="guitar">完整歌曲 · 提取吉他声部</option><option value="guitar_solo">纯吉他录音 · 和弦 / 指弹</option><option value="song">完整歌曲 · 人声旋律改成吉他</option><option value="solo">单旋律 · 哼唱 / 单音乐器</option></select></label>
+          <label>从第几秒开始<input id="clip-start" type="number" min="0" max="7200" step="1" value="0" disabled></label>
+          <label>分析多长<select id="clip-length"><option value="0" selected>整首歌曲 · 最长 30 分钟</option><option value="15">15 秒 · 快速试试</option><option value="30">30 秒</option><option value="60">60 秒</option><option value="90">90 秒</option></select></label>
+        </div>
+        <div class="submit-row"><button id="generate" class="button primary" disabled>生成六线谱 <span>↗</span></button><button class="button text-button" id="demo">先看看示例 <span>→</span></button></div>
+        <div id="error" class="error" role="alert" hidden></div>
+        <div id="progress" class="progress" role="status" aria-live="polite" hidden><div><span class="spinner"></span><span id="progress-message">准备分析</span><span id="progress-percent">0%</span></div><div class="progress-track"><div id="progress-bar"></div></div><p>整首歌曲会自动分段分析并合成一份谱，长歌曲需要更久。首次使用下载模型后可离线处理。</p></div>
+      </div>
+      <aside class="guide-panel" id="guide">
+        <div class="eyebrow">YOUR FIRST TAB</div><h2>不用懂乐理，<br>也可以迈出第一步。</h2>
+        <ol class="guide-steps"><li><b>先选你想弹的声部</b><p>还原原曲吉他，选“提取吉他声部”；想弹唱出来的旋律，选“人声旋律改成吉他”。</p></li><li><b>数字，就是要按的位置</b><p>六条线对应六根弦。数字 3 表示按第 3 品，0 表示空弦。</p></li><li><b>对照原曲，慢慢练习</b><p>支持多音试听和修改指法，可导出 MIDI 或 MusicXML 继续排谱。</p></li></ol>
+        <div class="tip"><span>✳</span><p>木吉他、清晰的独奏更适合。密集混音、失真与多把吉他叠录容易错漏；结果需要对照录音检查，也不会自动编成完整指弹曲。</p></div>
+      </aside>
+    </section>
+
+    <section id="result" class="result" hidden aria-labelledby="result-heading">
+      <div class="result-heading"><div><div class="eyebrow" id="result-label">YOUR GUITAR TAB</div><h2 id="result-heading">你的旋律，有谱了。</h2><p id="result-subtitle"></p></div><div class="export-actions"><button class="button secondary" id="download-svg">下载谱图 ↓</button><button class="button secondary" id="download-txt">文本谱 ↓</button><button class="button secondary" id="print">打印 / PDF</button></div></div>
+      <div class="player-strip">
+        <div class="play-controls"><button id="play-tab" class="round-play" aria-label="播放生成的旋律">▶</button><div><strong>试听六线谱</strong><span id="play-time">0:00 / 0:00</span><span>拨弦合成音色 · 非原录音</span></div></div>
+        <div class="seek-control"><input id="play-seek" type="range" min="0" max="0" step="0.01" value="0" aria-label="六线谱播放进度" aria-valuetext="0:00 / 0:00"><span>拖动可跳转</span></div>
+        <button id="restart-tab" class="restart-tab" aria-label="回到开头" title="回到开头">↺</button>
+        <label class="speed-label">练习速度<select id="speed"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1" selected>1×</option></select></label><div class="tab-meta"><span id="tempo"></span><span>标准调弦 E A D G B e</span></div>
+      </div>
+      <div class="extracted" id="extracted" hidden><span>分离出的人声 · 对照检查</span><audio id="melody-audio" controls preload="none" aria-label="试听分离的人声"></audio></div>
+      <div class="tab-paper"><div class="paper-header"><span id="paper-title">旋律六线谱</span><span id="paper-detail"></span></div><div id="tab-container"></div><div class="paper-legend"><span><i class="legend-dot"></i>低置信度音符，建议试听确认</span><span>横线表示持续时长 · 点击数字可以修改</span></div></div>
+      <p class="result-note" id="result-note"></p>
+      <div class="score-export">
+        <div><strong>继续排谱</strong><p>MusicXML 可用 MuseScore 打开，查看带节奏的六线谱并修改。节奏按网格估计，快音会自动细分；请核对参考速度与拍号。</p></div>
+        <label>排谱速度 BPM<input id="score-bpm" type="number" min="30" max="300" step="1" value="120"></label>
+        <label>拍号<select id="score-meter"><option value="4/4">4/4</option><option value="3/4">3/4</option><option value="6/8">6/8</option></select></label>
+        <button class="button secondary" id="download-midi">MIDI ↓</button><button class="button secondary" id="download-musicxml">MusicXML ↓</button>
+        <p id="export-status" role="status" aria-live="polite"></p>
+      </div>
+    </section>
+    <footer><span>弦外 STRINGNOTE</span><span>让每一次喜欢，都有回响。</span><span>音乐在本机处理，不上传到云端</span></footer>
+  </main>
+  <dialog id="note-dialog"><form method="dialog"><div class="dialog-heading"><h3>调整这个音</h3><button value="cancel" aria-label="关闭" class="close-button">×</button></div><p id="edit-time"></p><label>音高<select id="edit-pitch"></select></label><label>在哪根弦上弹<select id="edit-position"></select></label><p id="edit-error" role="alert"></p><div class="dialog-actions"><button value="cancel" class="button secondary">取消</button><button id="save-note" type="button" class="button primary">保存修改</button></div></form></dialog>
+</body>
+</html>

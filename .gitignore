@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+.pytest_cache/
+data/
+node_modules/
+.env
+.env.*
+!.env.example
+*.log
+*.pid
+# Local diagnosis of an uploaded recording; keep this on the user's computer.
+docs/audio-diagnosis.md
